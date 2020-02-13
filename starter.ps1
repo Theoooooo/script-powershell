@@ -9,25 +9,24 @@ $sha256 = New-Object -TypeName System.Security.Cryptography.SHA256CryptoServiceP
 $utf8 = New-Object -TypeName System.Text.UTF8Encoding
 $hash = [System.BitConverter]::ToString($sha256.ComputeHash($utf8.GetBytes($EncodedText)))
 
-if ([System.IO.File]::Exists("REGISTRY::HKEY_CURRENT_USER\Softwre\Microsoft\FTP\Task")) {
-    New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name New_Value -PropertyTypeString -value $hash
-} else {
-    Set-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name New_Value -Value $hash
+
+try {
+
+    Get-ItemProperty "REGISTRY::\HKEY_CURRENT_USER\Software\Microsoft\FTP" | Select-Object -ExpandProperty Old_Value -ErrorAction Stop | Out-Null
+    $old_hash = Get-ItemPropertyValue -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Old_Value
+
+} catch {
+     New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Old_Value -PropertyType String -value $hash
 }
 
-$new_hash = Get-ItemPropertyValue -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name New_Value
-
-if (-Not [System.IO.File]::Exists("REGISTRY::HKEY_CURRENT_USER\Softwre\Microsoft\FTP\Old_Value")) {
-    New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Old_Value -PropertyTypeString -value $new_hash
-} else {
-    $old_hash = Get-ItemPropertyValue -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Old_Value
-    if ($new_hash -eq $old_hash) {
-        
+if ($hash -eq $old_hash) {
+    
     } else {
-        if ([System.IO.File]::Exists("REGISTRY::HKEY_CURRENT_USER\Softwre\Microsoft\FTP\Task")) {
-            New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -PropertyType String -Value $EncodedText
-        } else {
+    
+        try {
+            Get-ItemProperty "REGISTRY::\HKEY_CURRENT_USER\Software\Microsoft\FTP" | Select-Object -ExpandProperty Task -ErrorAction Stop | Out-Null
             Set-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -Value $EncodedText
+        } catch {
+            New-ItemProperty -Path REGISTRY::HKEY_CURRENT_USER\Software\Microsoft\FTP -Name Task -PropertyType String -Value $EncodedText
         }
     }
-}
