@@ -11,11 +11,10 @@ $writer.AutoFlush = $true
 
 if($TCPClient.Connected){
     write-host "Connection au serveur Opérationnelle"
-    $writer.WriteLine("PASS ");
-    $writer.WriteLine("NICK bot-theo");
-    $writer.WriteLine("USER bot-theo 0 * :bot-theo");
-    sleep 1
-    $writer.WriteLine("JOIN #SCRIPT-POWERSHELL");
+#    $writer.WriteLine("PASS ");
+    $writer.WriteLine("NICK bot-theo")
+    $writer.WriteLine("USER bot-theo 0 * :bot-theo")
+    $writer.WriteLine("JOIN #SCRIPT-POWERSHELL")
     $writer.WriteLine("PRIVMSG #script-powershell :test, powershell")
     $writer.Flush();
 }
@@ -26,16 +25,23 @@ else{
 do {
     $read = $reader.ReadLine();
     write-host $read
-    if ($read -like '*stop_powershell*') {
-        $writer.WriteLine("DISCONNECT")
-        break
+    if ($read -like '*Le bot de Theo à bien rejoins le channel*') {
+        if($read -like '*The-oo*') {
+            $writer.WriteLine("QUIT")
+            $read = $reader.ReadLine();
+            write-host $read
+            break
+        } else {
+            $writer.WriteLine("PRIVMSG #script-powershell :spece de battard tu va pas m'etteindre comme ca")
+        }
+
     }
+    if ($read -like '*command_bot*') {
+        $value = $read -split "command_bot "
+        Write-host $value[1]
+        $writer.WriteLine($value[1])
+    }
+
 } until($read -eq "")
 
 $TCPClient.Close();
-
-
-
-
-
-
