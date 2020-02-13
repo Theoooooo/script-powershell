@@ -1,0 +1,41 @@
+$server = "chat.freenode.net"
+$port   = 6667
+
+# Connect-session
+$TCPClient = new-object Net.Sockets.TcpClient
+$TCPClient.Connect($server, $port)
+[Net.Sockets.NetworkStream]$NetStream = $TCPClient.GetStream()
+[IO.StreamWriter]$writer = new-object IO.StreamWriter($NetStream,[Text.Encoding]::ASCII)
+[IO.StreamReader]$reader = new-object IO.StreamReader($NetStream,[Text.Encoding]::ASCII)
+$writer.AutoFlush = $true
+
+if($TCPClient.Connected){
+    write-host "Connection au serveur Opérationnelle"
+    $writer.WriteLine("PASS ");
+    $writer.WriteLine("NICK bot-theo");
+    $writer.WriteLine("USER bot-theo 0 * :bot-theo");
+    sleep 1
+    $writer.WriteLine("JOIN #SCRIPT-POWERSHELL");
+    $writer.WriteLine("PRIVMSG #script-powershell :test, powershell")
+    $writer.Flush();
+}
+else{
+    write-host "Problème de connection"    
+}
+
+do {
+    $read = $reader.ReadLine();
+    write-host $read
+    if ($read -like '*stop_powershell*') {
+        $writer.WriteLine("DISCONNECT")
+        break
+    }
+} until($read -eq "")
+
+$TCPClient.Close();
+
+
+
+
+
+
