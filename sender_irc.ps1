@@ -37,7 +37,8 @@ do {
     $read = $reader.ReadLine();
     write-host $read 
    
-    if($read -like '*End of /MOTD command.*') {
+    if($read -like '*End of /MOTD command*') {
+        sleep 1
         $pass = $true
     } 
 
@@ -70,6 +71,7 @@ do {
 
     if ($read -like '*' + $hostname + '*') {
         $writer.WriteLine("PRIVMSG " + $owner + " :" + $read)
+        sleep(0.1)
     }
 
 
@@ -78,3 +80,5 @@ do {
 } until($read -eq "")
 
 $TCPClient.Close();
+
+Remove-Variable pass
